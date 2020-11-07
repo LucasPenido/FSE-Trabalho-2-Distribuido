@@ -2,13 +2,16 @@
 
 int socketServCentralfd;
 
-void enviaMensagemServidorCentral(uint8_t *pacoteEnvio, int tamMensagem) {
+int enviaMensagemServidorCentral(uint8_t *pacoteEnvio, int tamMensagem) {
     if (send(socketServCentralfd, pacoteEnvio, tamMensagem, 0) != tamMensagem) {
-        printf("Erro no envio: numero de bytes enviados diferente do esperado\n");
+        return 0;
     }
+    return 1;
 }
 
-void conectarServidorCentral() {
+void *mantemConexaoServidorCentral() {
+    pthread_t thread_verifica_dispositivos, thread_verifica_sensores;
+
     struct sockaddr_in servaddr;
 
     socketServCentralfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -26,7 +29,11 @@ void conectarServidorCentral() {
     while (1) {
         if (connect(socketServCentralfd, (struct sockaddr *)&servaddr, sizeof(servaddr)) == 0) {
             system("clear");
-            break;
+            printf("Conectado ao Servidor Central\n");
+            pthread_create(&thread_verifica_dispositivos, NULL, &informaEstadoDispositivos, NULL);
+            pthread_create(&thread_verifica_sensores, NULL, &verificaSensores, NULL);
+            pthread_join(thread_verifica_dispositivos, NULL);
+            pthread_join(thread_verifica_sensores, NULL);
         }
         usleep(500000);
     }

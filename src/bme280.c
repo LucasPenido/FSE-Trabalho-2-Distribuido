@@ -1,10 +1,9 @@
 #include "bme280.h"
 
-#include "bme280Driver.h"
-
 #define NUMERO_VALORES_PARA_MEDIA 10
 
 struct identifier identificador;
+Bme280TemperaturaUmidade bme280TemperaturaUmidade = {0.0, 0.0};
 
 struct identifier {
     /* Variável que contém o endereço do dispositivo */
@@ -47,7 +46,7 @@ void user_delay_us(uint32_t period, void *intf_ptr) {
     usleep(period);
 }
 
-float stream_sensor_data_normal_mode(struct bme280_dev *dev) {
+struct bme280_data stream_sensor_data_normal_mode(struct bme280_dev *dev) {
     int8_t rslt;
     uint8_t settings_sel;
     struct bme280_data comp_data;
@@ -69,19 +68,19 @@ float stream_sensor_data_normal_mode(struct bme280_dev *dev) {
 
     /* Espera 1 segundo para realizar a medição */
     dev->delay_us(100000, dev->intf_ptr);
-    rslt = bme280_get_sensor_data(BME280_TEMP, &comp_data, dev);
+    rslt = bme280_get_sensor_data(BME280_ALL, &comp_data, dev);
     if (rslt != BME280_OK) {
         fprintf(stderr, "Erro ao transmitir dados do sensor (código: %+d).\n", rslt);
         exit(1);
     }
 
-    return comp_data.temperature;
+    return comp_data;
 }
 
-float bme280_requisitaTemperaturaUmidade() {
+void bme280_defineTemperaturaUmidade() {
     struct bme280_dev dispositivo;
+    struct bme280_data comp_data;
 
-    float temperatura;
     int8_t rslt = BME280_OK;
 
     /* Interface I2C */
@@ -98,12 +97,35 @@ float bme280_requisitaTemperaturaUmidade() {
     if (rslt != BME280_OK) {
         printf("erro init\n");
 
-        return -1;
+        return;
     }
 
-    temperatura = stream_sensor_data_normal_mode(&dispositivo);
+    comp_data = stream_sensor_data_normal_mode(&dispositivo);
 
-    return temperatura;
+    float temperaturaMinimaPossivel = 15.00;
+    float umidadeMinimaPossivel = 9.00;
+    float diferencaMaxima = 1.0;
+
+    /* Verifica se a temperatura ou umidade estão dentro da faixa de valores possíveis.
+    *  Se estiverem, verifíca se os valores já foram setados anteriormente.
+    *  Se já foram, verifica se a variação está de acordo com a diferença máxima estabelecida. Se estiver, atualiza os valores.
+    *  Se não foram, seta o valar obtido.
+    */
+    if (comp_data.temperature >= temperaturaMinimaPossivel) {
+        if (bme280TemperaturaUmidade.temperatura != 0 && (abs(comp_data.temperature - bme280TemperaturaUmidade.temperatura) < diferencaMaxima)) {
+            bme280TemperaturaUmidade.temperatura = comp_data.temperature;
+        } else if (bme280TemperaturaUmidade.temperatura == 0) {
+            bme280TemperaturaUmidade.temperatura = comp_data.temperature;
+        }
+    }
+
+    if (comp_data.humidity >= umidadeMinimaPossivel) {
+        if (bme280TemperaturaUmidade.umidade != 0 && (abs(comp_data.humidity - bme280TemperaturaUmidade.umidade) < diferencaMaxima)) {
+            bme280TemperaturaUmidade.umidade = comp_data.humidity;
+        } else if (bme280TemperaturaUmidade.umidade == 0) {
+            bme280TemperaturaUmidade.umidade = comp_data.humidity;
+        }
+    }
 }
 
 void bme280_inicializa() {

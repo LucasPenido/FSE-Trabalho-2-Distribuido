@@ -18,8 +18,6 @@ typedef struct
     unsigned int estadoLampada04 : 1;
     unsigned int estadoArCondicionado01 : 1;
     unsigned int estadoArCondicionado02 : 1;
-    float temperatura;
-    float humidade;
 } EstadoDispositivos;
 
 typedef struct {
@@ -50,8 +48,8 @@ typedef struct {
 #define NUM_SENSORES 8
 
 void bcm2835_acionarDispositivo(int numDispositivo, int estado);
-EstadoDispositivos bcm2835_verificaDispositivos(EstadoDispositivos estadoDispositivos);
-EstadoSensores bcm2835_verificaSensores(EstadoSensores estadoSensores);
+EstadoDispositivos bcm2835_verificaDispositivos();
+EstadoSensores bcm2835_verificaSensores();
 void bcm2835_ligarVentoinha(int ligar);
 void bcm2835_inicializa();
 void bcm2835_desliga();

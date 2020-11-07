@@ -2,6 +2,7 @@
 #define SERVIDOR_DISTRIBUIDO_H
 
 #include <arpa/inet.h>
+#include <errno.h>
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>

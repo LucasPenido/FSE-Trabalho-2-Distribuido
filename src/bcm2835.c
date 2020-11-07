@@ -21,13 +21,22 @@ void bcm2835_acionarDispositivo(int numDispositivo, int estado) {
     bcm2835_gpio_write(numDispositivo, estado);
 }
 
-EstadoDispositivos bcm2835_verificaDispositivos(EstadoDispositivos estadoDispositivos){
-    printf("%d", bcm2835_gpio_lev(LAMPADA_01));
+EstadoDispositivos bcm2835_verificaDispositivos() {
+    EstadoDispositivos estadoDispositivos;
+
+    estadoDispositivos.estadoLampada01 = bcm2835_gpio_lev(LAMPADA_01);
+    estadoDispositivos.estadoLampada02 = bcm2835_gpio_lev(LAMPADA_02);
+    estadoDispositivos.estadoLampada03 = bcm2835_gpio_lev(LAMPADA_03);
+    estadoDispositivos.estadoLampada04 = bcm2835_gpio_lev(LAMPADA_04);
+    estadoDispositivos.estadoArCondicionado01 = bcm2835_gpio_lev(AR_CONDICIONADO_01);
+    estadoDispositivos.estadoArCondicionado02 = bcm2835_gpio_lev(AR_CONDICIONADO_02);
 
     return estadoDispositivos;
 }
 
-EstadoSensores bcm2835_verificaSensores(EstadoSensores estadoSensores) {
+EstadoSensores bcm2835_verificaSensores() {
+    EstadoSensores estadoSensores;
+
     estadoSensores.sensorPresensa01 = bcm2835_gpio_lev(SENSOR_PRESENSA_01);
     estadoSensores.sensorPresensa02 = bcm2835_gpio_lev(SENSOR_PRESENSA_02);
     estadoSensores.sensorAbertura01 = bcm2835_gpio_lev(SENSOR_ABERTURA_01);
@@ -37,7 +46,6 @@ EstadoSensores bcm2835_verificaSensores(EstadoSensores estadoSensores) {
     estadoSensores.sensorAbertura05 = bcm2835_gpio_lev(SENSOR_ABERTURA_05);
     estadoSensores.sensorAbertura06 = bcm2835_gpio_lev(SENSOR_ABERTURA_06);
 
-    
     return estadoSensores;
 }
 
